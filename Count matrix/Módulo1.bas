@@ -11,7 +11,7 @@ Sub ImportarTXT()
         If .Show = -1 Then
             Carpeta = .SelectedItems(1) & "\"
         Else
-            Exit Sub ' Si el usuario cancela
+            Exit Sub ' Si se cancela el proceso
         End If
     End With
     
