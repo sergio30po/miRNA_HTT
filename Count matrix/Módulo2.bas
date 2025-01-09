@@ -1,4 +1,4 @@
-Attribute VB_Name = "Módulo2"
+Attribute VB_Name = "Count_matrix"
 Sub CombinarHojas()
     Dim HojaDestino As Worksheet
     Dim HojaOrigen As Worksheet
@@ -26,11 +26,11 @@ Sub CombinarHojas()
     ' Recorrer todas las hojas del libro
     For Each HojaOrigen In ThisWorkbook.Sheets
         If HojaOrigen.Name <> HojaDestino.Name Then
-            ' Obtener la última fila y columna de la hoja origen
+            ' Obtener la Ãºltima fila y columna de la hoja origen
             UltimaFilaOrigen = HojaOrigen.Cells(HojaOrigen.Rows.Count, 1).End(xlUp).Row
             UltimaColumnaOrigen = HojaOrigen.Cells(1, HojaOrigen.Columns.Count).End(xlToLeft).Column
 
-            ' Copiar los row names (Columna A) si aún no se han copiado
+            ' Copiar los row names (Columna A) si aÃºn no se han copiado
             If HojaDestino.Cells(2, 1).Value = "" Then
                 HojaOrigen.Range(HojaOrigen.Cells(1, 1), HojaOrigen.Cells(UltimaFilaOrigen, 1)).Copy _
                     Destination:=HojaDestino.Cells(2, 1)
@@ -43,7 +43,7 @@ Sub CombinarHojas()
             ' Agregar el nombre de la hoja como encabezado para sus columnas
             HojaDestino.Cells(1, ColumnaInicioDestino).Value = HojaOrigen.Name
 
-            ' Avanzar a la siguiente columna para la próxima hoja
+            ' Avanzar a la siguiente columna para la prÃ³xima hoja
             ColumnaInicioDestino = ColumnaInicioDestino + UltimaColumnaOrigen - 1
         End If
     Next HojaOrigen
