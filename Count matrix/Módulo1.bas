@@ -1,4 +1,4 @@
-Attribute VB_Name = "Módulo1"
+Attribute VB_Name = "ImportarTXT"
 Sub ImportarTXT()
     Dim Carpeta As String
     Dim Archivo As String
@@ -23,8 +23,8 @@ Sub ImportarTXT()
         ' Crear una nueva hoja
         Set Hoja = ThisWorkbook.Sheets.Add
         
-        ' Asignar el nombre del archivo (sin extensión y sin "-read_counts") como nombre de la hoja
-        NombreHoja = Left(Archivo, InStrRev(Archivo, ".") - 1) ' Quitar la extensión
+        ' Asignar el nombre del archivo (sin extensiÃ³n y sin "-read_counts") como nombre de la hoja
+        NombreHoja = Left(Archivo, InStrRev(Archivo, ".") - 1) ' Quitar la extensiÃ³n
         NombreHoja = Replace(NombreHoja, "-read_counts", "")  ' Quitar el sufijo "-read_counts"
         Hoja.Name = NombreHoja
         
