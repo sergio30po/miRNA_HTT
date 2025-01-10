@@ -1,5 +1,6 @@
 # Analysis of differential expression of miRNAs in brain tissue of patients with Alzheimer's disease: Influence of _HTT_ genotype
-**Abstract**
+**Abstract** 
+
 Differential expression analysis of miRNA profile in AD samples based on HTT genotype.
 The repository contains the following files:
 1. [LICENSE](./LICENSE): A GNU GENERAL PUBLIC LICENSE (Version 3, 29 June 2007) is used in accordance with the original text file where all the results are collected, which presents a GNU Free Documentation License (GNU FDL)
