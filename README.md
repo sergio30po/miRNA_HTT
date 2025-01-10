@@ -6,4 +6,4 @@ The repository contains the following files:
 2. [Read_counts.rar](./Read_counts.rar): Compressed file containing the read counts of all samples analyzed by RNA-seq. These initial data are available in the ZENODO repository for public consultation, through the code “11185109”.
 https://zenodo.org/records/11185109
 
-3. [Count matrix folder](./Count_matrix): Contains all the macros needed to create the counting matrix from the individual read_counts.
+3. [Count matrix folder](./Count matrix): Contains all the macros needed to create the counting matrix from the individual read_counts.
