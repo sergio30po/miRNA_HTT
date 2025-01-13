@@ -19,7 +19,6 @@ Archivos principales:
 + Disease_duration: Duración de la enfermedad (en años) desde el inicio hasta el fallecimiento.
 + HTT_short_allele: Número de repeticiones CAG en el alelo corto del gen _HTT_.
 + HTT_long_allele: Número de repeticiones CAG en el alelo largo del gen _HTT_.
-+ PMI: Intervalo post-mortem (en horas) entre el fallecimiento y la recolección de la muestra.
 
 3. [RNA-seq_data.Rmd](./RNA-seq_data.Rmd): Archivo R Markdown que contiene los scripts para el análisis de datos de RNA-seq, incluyendo estadística descriptiva y análisis de expresión diferencial de miRNAs. Para ello se emplea como punto de partida la [tabla de datos demográficos](./Demographic_data(metadata).xlsx) y la [matriz de conteos](../Count%20matrix/count_matrix.xlsx). Este script se puede ejecutar manualmente o se puede ejecutar con el resto de scripts de forma automática.
 En ambos casos, saldrá una primera ventana para seleccionar el directorio de trabajo. A continuación saldrá una ventana para seleccionar la matriz de conteo y finalmente otra ventana para seleccionar la tabla demográfica.
