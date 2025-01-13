@@ -23,5 +23,6 @@ Archivos principales:
 + HTT_long_allele
 + PMI
 
-3. [RNA-seq_data.Rmd](./RNA-seq_data.Rmd): Archivo R Markdown que contiene los scripts para el análisis de datos de RNA-seq, incluyendo estadística descriptiva y análisis de expresión diferencial de miRNAs. Para ello se emplea como punto de partida la [tabla de datos demográficos](./Demographic_data.xlsx) y la [matriz de conteos](../Count%20matrix/count_matrix.xlsx).
+3. [RNA-seq_data.Rmd](./RNA-seq_data.Rmd): Archivo R Markdown que contiene los scripts para el análisis de datos de RNA-seq, incluyendo estadística descriptiva y análisis de expresión diferencial de miRNAs. Para ello se emplea como punto de partida la [tabla de datos demográficos](./Demographic_data.xlsx) y la [matriz de conteos](../Count%20matrix/count_matrix.xlsx). Este script se puede ejecutar manualmente o se puede ejecutar con el resto de scripts de forma automática.
+En ambos casos, saldrá una primera ventana para seleccionar el directorio de trabajo. A continuación saldrá una ventana para seleccionar la matriz de conteo y finalmente otra ventana para seleccionar la tabla demográfica.
 
