@@ -6,7 +6,7 @@ Contenido del repositorio
 Archivos principales:
 1. [Demographic.R](./Demographic.R): Archivo con scripts en R para procesar y analizar los datos demográficos de las muestras. Este código emplea como punto de partida la [tabla de datos demográficos](./Demographic_data(metadata).xlsx). 
 
-2. [Demographic_data.xlsxs](./Demographic_data.xlsx): Base de datos en formato Excel con información demográfica de las muestras. Incluye los siguientes campos:
+2. [Demographic_data(metadata).xlsxs](./Demographic_data(metadata).xlsx): Base de datos en formato Excel con información demográfica de las muestras. Incluye los siguientes campos:
 
 + Sample: Identificador único de la muestra utilizada.
 + Condition: Estado clínico del paciente (A: EA; B:EA con IA; C:control).
