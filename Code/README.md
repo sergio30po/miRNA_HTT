@@ -4,7 +4,7 @@ Este repositorio contiene todos los archivos y scripts necesarios para el análi
 
 Contenido del repositorio
 Archivos principales:
-1. [Demographic.R](./Demographic.R): Archivo con scripts en R para procesar y analizar los datos demográficos de las muestras. Este código emplea como punto de partida la [tabla de datos demográficos](./Demographic_data.xlsx). 
+1. [Demographic.R](./Demographic.R): Archivo con scripts en R para procesar y analizar los datos demográficos de las muestras. Este código emplea como punto de partida la [tabla de datos demográficos](./Demographic_data(metadata).xlsx). 
 
 2. [Demographic_data.xlsxs](./Demographic_data.xlsx): Base de datos en formato Excel con información demográfica de las muestras. Incluye los siguientes campos:
 
@@ -21,6 +21,6 @@ Archivos principales:
 + HTT_long_allele: Número de repeticiones CAG en el alelo largo del gen _HTT_.
 + PMI: Intervalo post-mortem (en horas) entre el fallecimiento y la recolección de la muestra.
 
-3. [RNA-seq_data.Rmd](./RNA-seq_data.Rmd): Archivo R Markdown que contiene los scripts para el análisis de datos de RNA-seq, incluyendo estadística descriptiva y análisis de expresión diferencial de miRNAs. Para ello se emplea como punto de partida la [tabla de datos demográficos](./Demographic_data.xlsx) y la [matriz de conteos](../Count%20matrix/count_matrix.xlsx). Este script se puede ejecutar manualmente o se puede ejecutar con el resto de scripts de forma automática.
+3. [RNA-seq_data.Rmd](./RNA-seq_data.Rmd): Archivo R Markdown que contiene los scripts para el análisis de datos de RNA-seq, incluyendo estadística descriptiva y análisis de expresión diferencial de miRNAs. Para ello se emplea como punto de partida la [tabla de datos demográficos](./Demographic_data(metadata).xlsx) y la [matriz de conteos](../Count%20matrix/count_matrix.xlsx). Este script se puede ejecutar manualmente o se puede ejecutar con el resto de scripts de forma automática.
 En ambos casos, saldrá una primera ventana para seleccionar el directorio de trabajo. A continuación saldrá una ventana para seleccionar la matriz de conteo y finalmente otra ventana para seleccionar la tabla demográfica.
 
