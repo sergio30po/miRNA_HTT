@@ -4,7 +4,7 @@ Este repositorio contiene todos los archivos y scripts necesarios para el análi
 
 Contenido del repositorio
 Archivos principales:
-1. Demographic.R: Archivo con scripts en R para procesar y analizar los datos demográficos de las muestras.
+1. Demographic.R: Archivo con scripts en R para procesar y analizar los datos demográficos de las muestras. Este código emplea como punto de partida la tabla de datos demográficos. 
 
 2. Demographic_data.xlsx: Base de datos en formato Excel con información demográfica de las muestras. Incluye los siguientes campos:
 
