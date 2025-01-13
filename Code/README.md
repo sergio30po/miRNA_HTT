@@ -4,11 +4,9 @@ Este repositorio contiene todos los archivos y scripts necesarios para el análi
 
 Contenido del repositorio
 Archivos principales:
-Demographic.R
-Archivo con scripts en R para procesar y analizar los datos demográficos de las muestras.
+1. Demographic.R: Archivo con scripts en R para procesar y analizar los datos demográficos de las muestras.
 
-Demographic_data.xlsx
-Base de datos en formato Excel con información demográfica de las muestras. Incluye los siguientes campos:
+2. Demographic_data.xlsx: Base de datos en formato Excel con información demográfica de las muestras. Incluye los siguientes campos:
 
 + Sample
 + Patient_ID
@@ -24,15 +22,6 @@ Base de datos en formato Excel con información demográfica de las muestras. In
 + HTT_short_allele
 + HTT_long_allele
 + PMI
-+ RNA-seq_data.Rmd
-Archivo R Markdown que contiene los scripts para el análisis de datos de RNA-seq, incluyendo estadística descriptiva y análisis de expresión diferencial de miRNAs.
 
-Read_counts.rar
-Archivo comprimido en formato WinRAR que contiene los read counts individuales de todas las muestras como punto de partida para los análisis.
+3. RNA-seq_data.Rmd: Archivo R Markdown que contiene los scripts para el análisis de datos de RNA-seq, incluyendo estadística descriptiva y análisis de expresión diferencial de miRNAs.
 
-Counts_matrix
-Carpeta que contiene macros en Excel y la matriz de conteo en formato .xlsx. Incluye:
-
-Módulo1.bas: Macro para importar los read counts.
-Módulo2.bas: Macro para crear la matriz final de conteo.
-Matriz final de counts.
