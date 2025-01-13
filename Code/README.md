@@ -4,9 +4,9 @@ Este repositorio contiene todos los archivos y scripts necesarios para el análi
 
 Contenido del repositorio
 Archivos principales:
-1. Demographic.R: Archivo con scripts en R para procesar y analizar los datos demográficos de las muestras. Este código emplea como punto de partida la tabla de datos demográficos. 
+1. [Demographic.R](./Demographic.R): Archivo con scripts en R para procesar y analizar los datos demográficos de las muestras. Este código emplea como punto de partida la [tabla de datos demográficos](./Demographic_data.xlsx). 
 
-2. Demographic_data.xlsx: Base de datos en formato Excel con información demográfica de las muestras. Incluye los siguientes campos:
+2. [Demographic_data.xlsxs](./Demographic_data.xlsx): Base de datos en formato Excel con información demográfica de las muestras. Incluye los siguientes campos:
 
 + Sample
 + Patient_ID
@@ -23,5 +23,5 @@ Archivos principales:
 + HTT_long_allele
 + PMI
 
-3. RNA-seq_data.Rmd: Archivo R Markdown que contiene los scripts para el análisis de datos de RNA-seq, incluyendo estadística descriptiva y análisis de expresión diferencial de miRNAs.
+3. [RNA-seq_data.Rmd](./RNA-seq_data.Rmd): Archivo R Markdown que contiene los scripts para el análisis de datos de RNA-seq, incluyendo estadística descriptiva y análisis de expresión diferencial de miRNAs. Para ello se emplea como punto de partida la [tabla de datos demográficos](./Demographic_data.xlsx) y la [matriz de conteos](../Count%20matrix/count_matrix.xlsx).
 
