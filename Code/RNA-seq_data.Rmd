@@ -1,0 +1,92 @@
+---
+title: "RNA-seq_data"
+author: "Sergio Pérez Oliveira"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Análisis de expresión diferencial de miRNA - data
+
+Este archivo permite cargar la matriz de conteo y el sample datasheet que se emplearán como punto de partida para los análisis de expresión diferencial de miRNAs según las distintas condiciones.
+
+### Carga de datos de entrada
+
+```{r}
+# Cargar librerías necesarias
+if (!require("dplyr")) install.packages("dplyr")
+library(dplyr)
+
+# Establecer el directorio donde están los archivos
+cat("Choose directory:\n")
+choose.dir()
+ 
+# Obtener la lista de archivos .txt en el directorio
+cat("Choose count matrix:\n")
+archivo <- file.choose()
+if (!require("readxl")) install.packages("readxl")
+library(readxl)
+count_matrix <- read_excel(archivo, 
+    sheet = "counts_matrix")
+# Convertir la primera columna en row names
+if (!require("tibble")) install.packages("tibble")
+library(tibble)             # Cargar el paquete para usar column_to_rownames
+conteos <- count_matrix %>% column_to_rownames(var = colnames(count_matrix)[1])
+remove(count_matrix)
+```
+
+#### Análisis exploratorio de los datos
+
+```{r}
+# Resumen de los datos
+dim(conteos)  # Dimensiones de la matriz (número de miRNAs y muestras)
+head(conteos)  # Primeras filas de la matriz
+
+# Filtrar miRNAs que tienen 0 en todas las muestras
+conteos_filtrados <- conteos[rowSums(conteos > 0) > 0, ]
+
+# Verificar el impacto del filtrado
+dim(conteos_filtrados)
+
+# Calcular el total de reads por muestra
+total_reads <- colSums(conteos)
+
+# Crear una tabla con los resultados
+tabla_reads <- data.frame(total_reads)
+
+# Verificar la tabla
+print(tabla_reads)
+
+if (!require("tibble")) install.packages("tibble")
+library(openxlsx)
+# Guardar la tabla en un archivo
+write.xlsx(as.data.frame(tabla_reads),file="tabla_total_reads.xlsx",rowNames = TRUE)
+```
+
+#### Samples datasheet
+
+Mediante este script se cargan los datos de las muestras (samples) necesarios para crear el objeto dds.
+
+```{r}
+library(readxl)
+cat("Choose sample sheet:\n")
+Demograficos<-choose.files()
+samples <- read_excel(Demograficos)
+samples<-as.data.frame(samples)
+samples$Condition <- as.factor(samples$Condition)
+samples$Pathology <- as.factor(samples$Pathology)
+samples<-select(samples,-Patient_ID,-Biobank,-PMI)
+rownames(samples)<-samples$Sample
+#Comprobar que las muestras coinciden en ambas bases de datos
+all(rownames(samples) %in% colnames(conteos))
+
+#Comprobar si se encuentran en el mismo orden
+all(rownames(samples) == colnames(conteos))
+
+#Reordenar si no lo están
+conteos <- conteos[, rownames(samples)]
+all(rownames(samples) == colnames(conteos))
+```
