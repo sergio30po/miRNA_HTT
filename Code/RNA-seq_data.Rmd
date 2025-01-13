@@ -78,7 +78,6 @@ samples <- read_excel(Demograficos)
 samples<-as.data.frame(samples)
 samples$Condition <- as.factor(samples$Condition)
 samples$Pathology <- as.factor(samples$Pathology)
-samples<-select(samples,-Patient_ID,-Biobank,-PMI)
 rownames(samples)<-samples$Sample
 #Comprobar que las muestras coinciden en ambas bases de datos
 all(rownames(samples) %in% colnames(conteos))
