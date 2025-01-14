@@ -24,3 +24,6 @@ This repository contains all the files and scripts required for statistical and 
 3. [RNA-seq_data.Rmd](./RNA-seq_data.Rmd): R Markdown file containing scripts for RNA-seq data analysis, including descriptive statistics and differential expression analysis of miRNAs. It uses the [demographic data table](./Demographic_data(metadata).xlsx) and the [count matrix](../Count%20matrix/count_matrix.xlsx) as starting points. This script can be run manually or executed along with other scripts automatically. 
 
    In both cases, a window will first prompt the user to select the working directory. Next, another window will prompt the user to select the count matrix, followed by a third window to select the demographic table.
+   
+4. [RNA-seq_AD_C.Rmd](./RNA-seq_AD_C.Rmd and [RNA-seq_Condition.Rmd](./RNA-seq_Condition.Rmd)  contain the code necessary to perform the entire differential expression analysis and enrichment analysis.
+AD_C allows for comparison between the control group and the entire AD cohort while Condition allows for multiple comparisons between AD with intermediates, AD without intermediates, and control groups.
