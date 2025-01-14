@@ -25,5 +25,5 @@ This repository contains all the files and scripts required for statistical and 
 
    In both cases, a window will first prompt the user to select the working directory. Next, another window will prompt the user to select the count matrix, followed by a third window to select the demographic table.
    
-4. [RNA-seq_AD_C.Rmd](./RNA-seq_AD_C.Rmd and [RNA-seq_Condition.Rmd](./RNA-seq_Condition.Rmd)  contain the code necessary to perform the entire differential expression analysis and enrichment analysis.
+4. [RNA-seq_AD_C.Rmd](./RNA-seq_AD_C.Rmd) and [RNA-seq_Condition.Rmd](./RNA-seq_Condition.Rmd)  contain the code necessary to perform the entire differential expression analysis and enrichment analysis.
 AD_C allows for comparison between the control group and the entire AD cohort while Condition allows for multiple comparisons between AD with intermediates, AD without intermediates, and control groups.
