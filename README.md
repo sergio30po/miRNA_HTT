@@ -7,3 +7,5 @@ The repository contains the following files:
 https://zenodo.org/records/11185109
 
 3. [Count matrix folder](./Count%20matrix): Contains all the macros needed to create the counting matrix from the individual read_counts.
+
+4. [Count matrix folder](./Count%20matrix): Contains all the scripts and datasets needed to create the differential expression analysis.
