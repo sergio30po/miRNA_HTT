@@ -21,7 +21,7 @@ This repository contains all the files and scripts required for statistical and 
    + **HTT_short_allele**: Number of CAG repeats in the short allele of the _HTT_ gene.
    + **HTT_long_allele**: Number of CAG repeats in the long allele of the _HTT_ gene.
 
-3. [RNA-seq_data.Rmd](./RNA-seq_data.Rmd): R Markdown file containing scripts for RNA-seq data analysis, including descriptive statistics and differential expression analysis of miRNAs. It uses the [demographic data table](./Demographic_data(metadata).xlsx) and the [count matrix](../Count%20matrix/count_matrix.xlsx) as starting points. This script can be run manually or executed along with other scripts automatically. 
+3. [RNA-seq_data_AD_C.Rmd](./RNA-seq_data_AD_C.Rmd) : R Markdown file containing scripts for RNA-seq data analysis, including descriptive statistics and differential expression analysis of miRNAs. It uses the [demographic data table](./Demographic_data(metadata).xlsx) and the [count matrix](../Count%20matrix/count_matrix.xlsx) as starting points. This script can be run manually or executed along with other scripts automatically. 
 
    In both cases, a window will first prompt the user to select the working directory. Next, another window will prompt the user to select the count matrix, followed by a third window to select the demographic table.
    
