@@ -1,0 +1,501 @@
+---
+title: "RNA-seq analisis entre los grupos de EA y controles"
+author: "Sergio Pérez Oliveira"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## RNA-seq analisis entre los grupos de EA y controles
+
+Lo primero que debemos hacer es ejecutar el archivo RNA-seq_data.rmd para cargar tanto el counts_matrix como el sample sheet, que serán nuestro punto de partida.
+
+```{r}
+if (!require("rmarkdown")) install.packages("rmarkdown")
+library(rmarkdown)
+# Seleccionar el archivo .Rmd
+archivo_rmd <- file.choose()  # Abre el cuadro de diálogo para seleccionar el archivo .Rmd
+
+# Ejecutar el archivo .Rmd para obtener todos los datos en mi entorno
+render(archivo_rmd, output_format = "all", output_file = NULL)
+```
+
+### Paquetes Deseq2
+
+```{r}
+# Instalar el paquete DESeq2
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+    install.packages("BiocManager")
+}
+if (!require("DESeq2")) BiocManager::install("DESeq2")
+if (!require("pheatmap")) BiocManager::install("pheatmap")
+if (!require("kableExtra")) BiocManager::install("kableExtra")
+if (!require("tidyverse")) install.packages("tidyverse")
+# Cargar la librería DESeq2
+library(DESeq2)
+library(pheatmap)
+library(kableExtra)
+library(tidyverse)
+library(ggplot2)
+```
+
+#### Deseq2 object EA vs Control
+
+Nuestra matriz de recuento con nuestro DESeqDataSet contiene muchas filas con solo ceros y, además, muchas filas con solo unos pocos fragmentos en total. Para reducir el tamaño del objeto y aumentar la velocidad de nuestras funciones, podemos eliminar las filas que no tienen información o casi no tienen información sobre la cantidad de expresión génica. Aquí realizamos un filtrado previo para mantener solo las filas que tienen un recuento de al menos 5 (ya que los miRNAs tienen baja expresión) para una cantidad mínima de muestras. El recuento de 10 es una opción razonable para la secuenciación de ARN. Una recomendación para la cantidad mínima de muestras es especificar el tamaño de grupo más pequeño, por ejemplo, aquí hay 6 muestras en el grupo control.
+
+```{r}
+#Crear objeto Deseq2 EA VS Controles
+samples$Pathology <- factor(samples$Pathology, levels = c("Control", "EA"))
+dds <- DESeqDataSetFromMatrix(countData = conteos,
+                              colData = samples,
+                              design = ~ Pathology)
+dds$Pathology <- relevel(dds$Pathology, ref = "Control")
+
+smallestGroupSize <- 6
+keep <- rowSums(counts(dds) >= 5) >= smallestGroupSize
+dds <- dds[keep,]
+dim(dds)  # Ver cuántos genes quedan
+
+# Proporción de miRNAs eliminados
+removed_genes <- nrow(conteos) - nrow(dds)
+cat("miRNAs eliminados por bajo conteo:", removed_genes, "\n")
+cat("miRNAs totales:", nrow(dds), "\n")
+
+# Exploración inicial de los datos
+summary(rowMeans(counts(dds)))  # Media de expresión por miRNA
+```
+
+### Analisis de componentes principales (PCA) y Normalización
+
+```{r}
+dds<-estimateSizeFactors(dds)
+normalized <- counts(dds, normalized=TRUE)
+head(normalized)
+
+# Variance Stabilizing Transformation (vst)
+# Transformación de estabilización de la varianza
+vsd <- varianceStabilizingTransformation(dds, blind = TRUE)
+
+# Obtener la matriz transformada y calcular correlaciones
+vsd_mat <- assay(vsd)  # Matriz de datos transformados
+vsd_cor <- cor(vsd_mat)  # Correlación entre muestras
+
+# Conversión de colData a un data frame
+col_data_df <- as.data.frame(colData(dds))
+
+# Gráfico de agrupamiento jerárquico
+p<-plot(hclust(dist(t(vsd_mat))), labels = col_data_df$Pathology,
+     main = "Clúster jerárquico de muestras por grupo patológico")
+png("Clúster jerárquico de muestras por grupo patológico.png", width = 16, height = 10, units = "in", res = 300)
+p
+dev.off()
+# Heatmap de la matriz de correlación
+p<-pheatmap(vsd_cor, 
+         annotation_col = col_data_df["Pathology"],  # Anotación para las columnas
+         main = "Heatmap de correlación por grupo patológico")
+png("heatmap_correlacion_patologia.png", width = 16, height = 10, units = "in", res = 300)
+p
+dev.off()
+# Gráfico PCA
+
+# Extraer datos PCA con DESeq2
+pcaData <- plotPCA(vsd, intgroup = c("Pathology"), returnData = TRUE)
+
+# Calcular la varianza explicada por cada componente principal
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+
+# Crear el gráfico PCA
+ggplot(pcaData, aes(x = PC1, y = PC2, color = Pathology, shape = Pathology)) +
+  geom_point(size = 3) +  # Tamaño de los puntos
+  stat_ellipse(type = "norm", level = 0.95, 
+               linetype = "solid", size = 0.5,  # Grosor de la línea de la elipse
+               alpha = 0.2, aes(fill = Pathology), geom = "polygon") +  # Relleno transparente
+  scale_fill_manual(values = c("indianred1", "lightblue3")) +  # Colores de relleno
+  scale_color_manual(values = c("brown1", "cadetblue3")) +  # Colores de los bordes
+  scale_shape_manual(values = c(16, 17)) +  # Formas de los puntos
+  xlab(paste0("PC1 (", percentVar[1], "%)")) +  # Etiqueta del eje X con varianza
+  ylab(paste0("PC2 (", percentVar[2], "%)")) +  ggtitle("PCA por grupo patológico") +  # Título del gráfico
+  theme_minimal() +  # Tema minimalista
+  theme(
+    legend.position = "bottom",  # Leyenda en la parte inferior
+    plot.title = element_text(hjust = 0.5, face = "bold")  # Centrar el título
+  ) +
+  labs(
+    color = "Patología",   # Título de la leyenda de colores
+    shape = "Patología",   # Título de la leyenda de formas
+    fill = "Patología"     # Título de la leyenda de relleno
+  )
+ggsave("PCA por grupo patológico.png", width = 15, height = 10, units = "cm",bg = "white")
+
+```
+
+### Análisis de expresión diferencial
+
+```{r}
+# Análisis de expresión diferencial
+dds <- DESeq(dds)  # Realiza el análisis diferencial con DESeq2
+
+# Cálculo de la media y la varianza
+mean_counts <- apply(counts(dds, normalized = TRUE), 1, mean)  # Media por gen
+variance_counts <- apply(counts(dds, normalized = TRUE), 1, var)  # Varianza por gen
+
+# Crear un dataframe con los valores calculados
+df <- data.frame(
+  mean_counts = mean_counts,
+  variance_counts = variance_counts
+)
+
+# Gráfico de dispersión con ggplot2
+
+ggplot(df, aes(x = mean_counts, y = variance_counts)) +
+  geom_point(alpha = 0.5) +  # Puntos semitransparentes
+  scale_x_log10() +          # Escala logarítmica en X
+  scale_y_log10() +          # Escala logarítmica en Y
+  xlab("Means per gene") +   # Etiqueta del eje X
+  ylab("Variance per gene") +  # Etiqueta del eje Y
+  ggtitle("Gráfico de dispersión: Media vs Varianza") +  # Título del gráfico
+  theme_minimal()+ theme_minimal()+  theme(panel.background = element_rect(fill = "lightgray"))
+
+
+# Opcional: Gráfico usando la función plotDispEsts de DESeq2
+plotDispEsts(dds)  # Muestra la estimación de la dispersión
+```
+
+#### Selección de criterios de filtrado de resultados
+
+-   En análisis transcriptómicos, un umbral de **log2FC \> 1** implica un cambio de 2 veces en la expresión, lo cual suele ser considerado biológicamente relevante.
+
+```{r}
+#extract the results for each comparison that you are interested in 
+res <- results(dds, contrast=c("Pathology","Control","EA"))
+res
+
+mcols(res, use.names = TRUE)
+summary(res)
+
+res <- res[order(res$padj),]
+summary(res)
+head(res)
+
+write.csv(as.data.frame(res), file="totalmiRNA_EA_C.csv")
+# Filtrar genes significativos
+resSig <- subset(res, padj < 0.05 & abs(log2FoldChange) > 1)
+summary(resSig)
+
+# Ver los miRNAs significativos
+head(resSig)
+
+# Número total de miRNAs significativos
+cat("Número de miRNAs diferencialmente expresados:", nrow(resSig), "\n")
+
+write.csv(resSig, file="EA_C_miRNAs.csv")
+
+# Categorias de los miRNAs
+res$category <- "Not Significant"  # Categoría por defecto
+res$category[res$padj < 0.05 & res$log2FoldChange > 1] <- "Upregulated"
+res$category[res$padj < 0.05 & res$log2FoldChange < -1] <- "Downregulated"
+
+# Agregar nombres de miRNA como una nueva columna
+res$miRNA <- rownames(res)
+table(res$category)
+# Sobreexpresados
+upregulated <- as.data.frame(subset(res, res$category=="Upregulated"))
+nrow(upregulated)
+rownames(upregulated)
+# Infraexpresados
+downregulated <- as.data.frame(subset(res, res$category=="Downregulated"))
+nrow(downregulated)
+rownames(downregulated)
+```
+
+#### MA plot
+
+```{r}
+plotMA(res, main = "MA Plot", ylim = c(-5, 5))
+if (!require("ggpubr")) install.packages("ggpubr")
+library(ggpubr)
+# Default plot
+ggmaplot(res, main = expression("Control" %->% "EA"),
+   fdr = 0.05, fc = 2, size = 0.6,
+   palette = c("#B31B21", "#1465AC", "darkgray"),
+   genenames = as.vector(res$name),
+   legend = "top", top = 20,
+   font.label = c("bold", 8),
+   font.legend = "bold",
+   font.main = "bold")
+
+ggsave("MA plot EA vs C.png", width = 15, height = 10, units = "cm",bg = "white")
+
+# Add rectangle around labels
+ggmaplot(res, main = expression("Control" %->% "EA"),
+   fdr = 0.05, fc = 2, size = 0.6,
+   palette = c("#B31B21", "#1465AC", "darkgray"),
+   genenames = as.vector(res$name),
+   legend = "top", top = 20,
+   font.label = c("bold", 8), label.rectangle = TRUE,
+   font.legend = "bold",
+   font.main = "bold")
+ggsave("MA plot EA vs C bis.png", width = 15, height = 10, units = "cm",bg = "white")
+
+```
+
+#### Heatmap
+
+```{r}
+#### Visualización
+ntd <- normTransform(dds) #gives log2(n + 1)
+select <- order(rowMeans(counts(dds,normalized=TRUE)),
+                decreasing=TRUE) #50 miRNAs que cumplen los criterios
+pheatmap(assay(ntd)[select,], cluster_rows=TRUE, show_rownames=TRUE, show_colnames = TRUE,
+         cluster_cols=TRUE,  main = "Heatmap of miRNA control y EA",
+         fontsize = 8)
+
+df<-as.data.frame(resSig)
+df
+df <- df[order(df$log2FoldChange,decreasing =TRUE),]
+rlog_out<-rlog(dds,blind=TRUE) #Consegguir los counts normalizados
+met<-assay(rlog_out)[rownames(df),rownames(samples)]
+colnames(met)<-rownames(samples)
+base_mean<-rowMeans(met)
+met.scaled<-t(apply(met,1,scale))
+colnames(met.scaled)<-colnames(met)
+rownames(samples)
+
+l2_val<-as.matrix(df$log2FoldChange)
+colnames(l2_val)<-"logFC"
+
+mean<-as.matrix(df$baseMean)
+colnames(mean)<-"AveExpr"
+
+BiocManager::install("ComplexHeatmap")
+library(ComplexHeatmap)
+if (!require("RColorBrewer")) install.packages("RColorBrewer")
+if (!require("circlize")) install.packages("circlize")
+library(RColorBrewer)
+library(circlize)
+
+col_log2FC<-colorRamp2(c(min(l2_val),0,max(l2_val)),c("blue","white","red"))
+
+col_AveExpr<-colorRamp2(c(quantile(mean)[1],quantile(mean)[4]),c("white","red"))
+
+ha <- HeatmapAnnotation(summary = anno_summary(gp = gpar(fill = 2), 
+                                               height = unit(2, "cm")))
+
+h1 <- Heatmap(met.scaled, cluster_rows = F, 
+            column_labels = colnames(met.scaled), name="Z-score",
+            cluster_columns = T)
+h2 <- Heatmap(l2_val, row_labels = rownames(df), 
+            cluster_rows = F, name="logFC", top_annotation = ha, col = col_log2FC,
+            cell_fun = function(j, i, x, y, w, h, col) { # add text to each grid
+              grid.text(round(l2_val[i, j],2), x, y)
+            })
+h3 <- Heatmap(mean, row_labels = rownames(df), 
+            cluster_rows = F, name = "AveExpr", col=col_AveExpr,
+            cell_fun = function(j, i, x, y, w, h, col) { # add text to each grid
+              grid.text(round(mean[i, j],2), x, y)
+            })
+# Guardar el heatmap en PNG con alta calidad
+png("heatmap_miRNAs_values.png", width = 16, height = 10, units = "in", res = 300)
+h<-h1+h2
+h
+# Cerrar el dispositivo gráfico
+dev.off()
+h
+png("heatmap_miRNAs.png", width = 16, height = 10, units = "in", res = 300)
+h
+# Cerrar el dispositivo gráfico
+dev.off()
+h1
+```
+
+#### VolcanoPlot
+
+```{r}
+BiocManager::install('EnhancedVolcano')
+library(EnhancedVolcano)
+
+p<-EnhancedVolcano(res,
+    lab = rownames(res),
+    x = 'log2FoldChange',
+      y = 'padj',
+        title = 'VolcanoPlot - control y EA',
+    pCutoff = 0.05,  # El valor p directo para el umbral
+    FCcutoff = 1,    # Umbral de cambio de pliegue (fold change)
+    labSize = 3,            # Reduce el tamaño de las etiquetas
+    drawConnectors = TRUE,
+    widthConnectors = 0.5,
+    colConnectors = 'black',
+    arrowheads = FALSE,       # Evita que las líneas conectoras terminen con flechas
+    ylim = c(0, 4.5)        # Ajusta el límite del eje y
+)
+png("VolcanoPlot - control y EA.png", width = 16, height = 10, units = "in", res = 300)
+p
+# Cerrar el dispositivo gráfico
+dev.off()
+p
+
+if (!require("ggrepel")) install.packages("ggrepel")
+# Crear el gráfico de volcán
+library(ggrepel)  # Cargar el paquete ggrepel
+
+# Crear el gráfico de volcán
+ggplot(as.data.frame(res), aes(x = log2FoldChange, y = -log10(padj), color = category)) +
+  geom_point(alpha = 0.4) +
+  theme_minimal() +
+  labs(title = "Volcano plot - control y EA", x = "log2(Fold Change)", y = "-log10(FDR)") +
+  geom_hline(yintercept = -log10(0.05), col = "red", linetype = "dashed") +
+  geom_vline(xintercept = c(-1, 1), col = "blue", linetype = "dashed") +
+  scale_color_manual(values = c("Not Significant" = "grey", "Upregulated" = "red", "Downregulated" = "blue")) +
+  geom_text_repel(data = subset(res, padj < 0.05 & abs(log2FoldChange) > 1), 
+                  aes(label = miRNA), 
+                  color = "black",  # Cambiar el color de las etiquetas a negro
+                  size = 3,  # Ajustar el tamaño de la fuente
+                  box.padding = 0.5,  # Espaciado alrededor de la etiqueta
+                  point.padding = 0.5,  # Espaciado alrededor del punto
+                  segment.color = 'grey50',  # Color de la línea que conecta la etiqueta con el punto
+                  max.overlaps = 20)  # Permitir un número infinito de superposiciones
+ggsave("Volcano plot - control y EA bis.png", width = 15, height = 10, units = "cm",bg = "white")
+
+```
+
+## Análisis funcional
+
+```{r}
+# Instalar paquete si no lo tienes
+if (!require("readr")) install.packages("readr")
+
+# Cargar los datos descargados
+library(readr)
+mirTarBase <- read_delim("hsa_MTI.csv", delim = ",")  # Ajusta el nombre del archivo
+```
+
+### **Filtrar genes diana asociados a tus miRNAs**
+
+```{r}
+# Tu lista de miRNAs de interés
+miRNA_list <- rownames(resSig)
+miRNA_list <- gsub("_", "-", miRNA_list)
+write.csv(miRNA_list, file="EA_C_miRNAs_names.csv")
+
+# Filtrar solo interacciones funcionales
+mirTarBase <- mirTarBase %>%
+  filter(`Support Type` == "Functional MTI")
+
+# Verifica el número de interacciones funcionales
+cat("Número de interacciones funcionales:", nrow(mirTarBase), "\n")
+
+# Filtrar genes diana
+genes_target <- mirTarBase %>%
+  filter(miRNA %in% miRNA_list) %>%
+  pull('Target Gene')  # Extraer los nombres de genes
+
+# Quitar duplicados
+genes_target <- unique(genes_target)
+cat("Genes diana:", length(genes_target), "\n")
+```
+
+### Realizar enriquecimiento funcional con `clusterProfiler`
+
+```{r}
+BiocManager::install(c("clusterProfiler", "org.Hs.eg.db", "enrichplot"))
+
+library(clusterProfiler)
+library(org.Hs.eg.db)  # Base de datos para humanos
+library(enrichplot)
+
+# Enriquecimiento GO
+enrichGO_result_BP <- enrichGO(
+  gene         = genes_target,
+  OrgDb        = org.Hs.eg.db,
+  keyType      = "SYMBOL",  # Tipo de clave de los genes (SYMBOL o ENTREZID)
+  ont          = "BP",      # Ontología (BP: Procesos Biológicos)
+  pAdjustMethod = "BH",     # Corrección de p-valor
+  qvalueCutoff = 0.05
+)
+
+# Mostrar resultados
+head(enrichGO_result_BP)
+
+dotplot(enrichGO_result_BP, showCategory=10)  # Top 10 categorías
+ggsave("dotplot_BP.png", width = 10, height = 10, dpi = 600)
+barplot(enrichGO_result_BP, showCategory=10)  # Barras con las principales categorías
+
+ggsave("barplot_BP.png", width = 10, height = 10, dpi = 600)
+emapplot(pairwise_termsim(enrichGO_result_BP))
+ggsave("emapplot_BP.png", width = 10, height = 10, dpi = 600)
+
+# Enriquecimiento GO
+enrichGO_result_CC <- enrichGO(
+  gene         = genes_target,
+  OrgDb        = org.Hs.eg.db,
+  keyType      = "SYMBOL",  # Tipo de clave de los genes (SYMBOL o ENTREZID)
+  ont          = "CC",      # Ontología (CC: Componente celular)
+  pAdjustMethod = "BH",     # Corrección de p-valor
+  qvalueCutoff = 0.05
+)
+
+# Mostrar resultados
+head(enrichGO_result_CC)
+
+dotplot(enrichGO_result_CC, showCategory=10)  # Top 10 categorías
+ggsave("dotplot_CC.png", width = 10, height = 10, dpi = 600)
+barplot(enrichGO_result_CC, showCategory=10)  # Barras con las principales categorías
+
+ggsave("barplot_CC.png", width = 10, height = 10, dpi = 600)
+emapplot(pairwise_termsim(enrichGO_result_CC))
+ggsave("emapplot_CC.png", width = 10, height = 10, dpi = 600)
+
+# Enriquecimiento GO
+enrichGO_result_MF <- enrichGO(
+  gene         = genes_target,
+  OrgDb        = org.Hs.eg.db,
+  keyType      = "SYMBOL",  # Tipo de clave de los genes (SYMBOL o ENTREZID)
+  ont          = "MF",      # Ontología (MF: Función molecular)
+  pAdjustMethod = "BH",     # Corrección de p-valor
+  qvalueCutoff = 0.05
+)
+
+# Mostrar resultados
+head(enrichGO_result_MF)
+
+dotplot(enrichGO_result_MF, showCategory=10)  # Top 10 categorías
+ggsave("dotplot_MF.png", width = 10, height = 10, dpi = 600)
+barplot(enrichGO_result_MF, showCategory=10)  # Barras con las principales categorías
+
+ggsave("barplot_MF.png", width = 10, height = 10, dpi = 600)
+emapplot(pairwise_termsim(enrichGO_result_MF))
+ggsave("emapplot_MF.png", width = 10, height = 10, dpi = 600)
+```
+
+### Enriquecimiento KEGG (Vias metabolicas)
+
+```{r}
+# Filtrar genes diana
+genes_target_KEGG <- mirTarBase %>%
+  filter(miRNA %in% miRNA_list) %>%
+  pull('Target Gene (Entrez ID)')  # Extraer los nombres de genes
+# Quitar duplicados
+genes_target_KEGG <- unique(genes_target_KEGG)
+
+# KEGG Enrichment
+enrichKEGG_result <- enrichKEGG(
+  gene         = genes_target_KEGG,
+  organism     = "hsa",  # Código para humanos
+  keyType      = "kegg",
+  pAdjustMethod = "BH",
+  qvalueCutoff = 0.05
+)
+
+# Visualizar KEGG
+dotplot(enrichKEGG_result, showCategory=10)  # Top 10 categorías
+ggsave("dotplot_K.png", width = 10, height = 10, dpi = 600)
+
+barplot(enrichKEGG_result, showCategory=10)  # Barras con las principales categorías
+ggsave("barplot_K.png", width = 10, height = 10, dpi = 600)
+
+emapplot(pairwise_termsim(enrichKEGG_result))
+ggsave("emapplot_K.png", width = 10, height = 10, dpi = 600)
+```
