@@ -250,7 +250,7 @@ pheatmap(assay(ntd)[select,], cluster_rows=TRUE, show_rownames=TRUE, show_colnam
 df<-as.data.frame(resSig_A_C)
 df
 df <- df[order(df$log2FoldChange,decreasing =TRUE),]
-rlog_out<-rlog(dds,blind=TRUE) #Consegguir los counts normalizados
+rlog_out<-rlog(dds,blind=TRUE) #Conseguir los counts normalizados
 met<-assay(rlog_out)[rownames(df),rownames(samples)]
 colnames(met)<-rownames(samples)
 base_mean<-rowMeans(met)
@@ -259,9 +259,6 @@ colnames(met.scaled)<-colnames(met)
 rownames(samples)
 # Filtrar columnas de met.scaled que no comienzan con "B"
 met.scaled <- met.scaled[, !startsWith(colnames(met.scaled), "B")]
-
-# Filtrar filas de samples que no comienzan con "B"
-samples <- samples[!startsWith(rownames(samples), "B"), ]
 
 l2_val<-as.matrix(df$log2FoldChange)
 colnames(l2_val)<-"logFC"
@@ -313,7 +310,9 @@ h1
 #### VolcanoPlot
 
 ```{r}
-BiocManager::install('EnhancedVolcano')
+if (!requireNamespace("EnhancedVolcano", quietly = TRUE)) {
+  BiocManager::install("EnhancedVolcano")
+}
 library(EnhancedVolcano)
 
 p<-EnhancedVolcano(res_A_C,
@@ -471,10 +470,8 @@ met.scaled<-t(apply(met,1,scale))
 colnames(met.scaled)<-colnames(met)
 rownames(samples)
 # Filtrar columnas de met.scaled que no comienzan con "A"
-met.scaled <- met.scaled[, !startsWith(colnames(met.scaled), "A")]
 
-# Filtrar filas de samples que no comienzan con "A"
-samples <- samples[!startsWith(rownames(samples), "A"), ]
+met.scaled <- met.scaled[, !startsWith(colnames(met.scaled), "A")]
 
 l2_val<-as.matrix(df$log2FoldChange)
 colnames(l2_val)<-"logFC"
@@ -588,7 +585,14 @@ cat("Genes diana:", length(genes_target), "\n")
 ### Realizar enriquecimiento funcional con `clusterProfiler`
 
 ```{r}
-BiocManager::install(c("clusterProfiler", "org.Hs.eg.db", "enrichplot"))
+# Lista de paquetes necesarios
+paquetes <- c("clusterProfiler", "org.Hs.eg.db", "enrichplot")
+
+# Instalar solo los paquetes que no están instalados
+paquetes_no_instalados <- paquetes[!paquetes %in% installed.packages()[, "Package"]]
+if (length(paquetes_no_instalados) > 0) {
+  BiocManager::install(paquetes_no_instalados)
+}
 
 library(clusterProfiler)
 library(org.Hs.eg.db)  # Base de datos para humanos
