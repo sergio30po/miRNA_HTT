@@ -32,12 +32,10 @@ if (!requireNamespace("BiocManager", quietly = TRUE)) {
 }
 if (!require("DESeq2")) BiocManager::install("DESeq2")
 if (!require("pheatmap")) BiocManager::install("pheatmap")
-if (!require("kableExtra")) BiocManager::install("kableExtra")
 if (!require("tidyverse")) install.packages("tidyverse")
 # Cargar la librería DESeq2
 library(DESeq2)
 library(pheatmap)
-library(kableExtra)
 library(tidyverse)
 library(ggplot2)
 ```
@@ -87,16 +85,15 @@ vsd_cor <- cor(vsd_mat)  # Correlación entre muestras
 col_data_df <- as.data.frame(colData(dds))
 
 # Gráfico de agrupamiento jerárquico
-p<-plot(hclust(dist(t(vsd_mat))), labels = col_data_df$Pathology,
+png("Resultados/Patología/Clúster jerárquico de muestras por grupo patológico.png", width = 16, height = 10, units = "in", res = 300)
+plot(hclust(dist(t(vsd_mat))), labels = col_data_df$Pathology,
      main = "Clúster jerárquico de muestras por grupo patológico")
-png("Clúster jerárquico de muestras por grupo patológico.png", width = 16, height = 10, units = "in", res = 300)
-p
 dev.off()
 # Heatmap de la matriz de correlación
 p<-pheatmap(vsd_cor, 
          annotation_col = col_data_df["Pathology"],  # Anotación para las columnas
          main = "Heatmap de correlación por grupo patológico")
-png("heatmap_correlacion_patologia.png", width = 16, height = 10, units = "in", res = 300)
+png("Resultados/Patología/heatmap_correlacion_patologia.png", width = 16, height = 10, units = "in", res = 300)
 p
 dev.off()
 # Gráfico PCA
@@ -128,7 +125,7 @@ ggplot(pcaData, aes(x = PC1, y = PC2, color = Pathology, shape = Pathology)) +
     shape = "Patología",   # Título de la leyenda de formas
     fill = "Patología"     # Título de la leyenda de relleno
   )
-ggsave("PCA por grupo patológico.png", width = 15, height = 10, units = "cm",bg = "white")
+ggsave("Resultados/Patología/PCA por grupo patológico.png", width = 15, height = 10, units = "cm",bg = "white")
 
 ```
 
@@ -158,10 +155,13 @@ ggplot(df, aes(x = mean_counts, y = variance_counts)) +
   ylab("Variance per gene") +  # Etiqueta del eje Y
   ggtitle("Gráfico de dispersión: Media vs Varianza") +  # Título del gráfico
   theme_minimal()+ theme_minimal()+  theme(panel.background = element_rect(fill = "lightgray"))
+ggsave(filename="Resultados/Condición/PCA patologia - varianza.png", width = 15, height = 10, units = "cm",bg = "white")
 
 
 # Opcional: Gráfico usando la función plotDispEsts de DESeq2
 plotDispEsts(dds)  # Muestra la estimación de la dispersión
+png(file="Resultados/Condición/Dispersión Condición.png", width = 16, height = 10, units = "in", res = 300)
+
 ```
 
 #### Selección de criterios de filtrado de resultados
@@ -180,7 +180,7 @@ res <- res[order(res$padj),]
 summary(res)
 head(res)
 
-write.csv(as.data.frame(res), file="totalmiRNA_EA_C.csv")
+write.csv(as.data.frame(res), file="Resultados/Patología/totalmiRNA_EA_C.csv")
 # Filtrar genes significativos
 resSig <- subset(res, padj < 0.05 & abs(log2FoldChange) > 1)
 summary(resSig)
@@ -191,7 +191,7 @@ head(resSig)
 # Número total de miRNAs significativos
 cat("Número de miRNAs diferencialmente expresados:", nrow(resSig), "\n")
 
-write.csv(resSig, file="EA_C_miRNAs.csv")
+write.csv(resSig, file="Resultados/Patología/EA_C_miRNAs.csv")
 
 # Categorias de los miRNAs
 res$category <- "Not Significant"  # Categoría por defecto
@@ -227,7 +227,7 @@ ggmaplot(res, main = expression("Control" %->% "EA"),
    font.legend = "bold",
    font.main = "bold")
 
-ggsave("MA plot EA vs C.png", width = 15, height = 10, units = "cm",bg = "white")
+ggsave("Resultados/Patología/MA plot EA vs C.png", width = 15, height = 10, units = "cm",bg = "white")
 
 # Add rectangle around labels
 ggmaplot(res, main = expression("Control" %->% "EA"),
@@ -238,7 +238,7 @@ ggmaplot(res, main = expression("Control" %->% "EA"),
    font.label = c("bold", 8), label.rectangle = TRUE,
    font.legend = "bold",
    font.main = "bold")
-ggsave("MA plot EA vs C bis.png", width = 15, height = 10, units = "cm",bg = "white")
+ggsave("Resultados/Patología/MA plot EA vs C bis.png", width = 15, height = 10, units = "cm",bg = "white")
 
 ```
 
@@ -270,7 +270,9 @@ colnames(l2_val)<-"logFC"
 mean<-as.matrix(df$baseMean)
 colnames(mean)<-"AveExpr"
 
-BiocManager::install("ComplexHeatmap")
+if (!requireNamespace("ComplexHeatmap", quietly = TRUE)) {
+  BiocManager::install("ComplexHeatmap")
+}
 library(ComplexHeatmap)
 if (!require("RColorBrewer")) install.packages("RColorBrewer")
 if (!require("circlize")) install.packages("circlize")
@@ -298,13 +300,13 @@ h3 <- Heatmap(mean, row_labels = rownames(df),
               grid.text(round(mean[i, j],2), x, y)
             })
 # Guardar el heatmap en PNG con alta calidad
-png("heatmap_miRNAs_values.png", width = 16, height = 10, units = "in", res = 300)
+png("Resultados/Patología/heatmap_miRNAs_values.png", width = 16, height = 10, units = "in", res = 300)
 h<-h1+h2
 h
 # Cerrar el dispositivo gráfico
 dev.off()
 h
-png("heatmap_miRNAs.png", width = 16, height = 10, units = "in", res = 300)
+png("Resultados/Patología/heatmap_miRNAs.png", width = 16, height = 10, units = "in", res = 300)
 h
 # Cerrar el dispositivo gráfico
 dev.off()
@@ -314,7 +316,9 @@ h1
 #### VolcanoPlot
 
 ```{r}
-BiocManager::install('EnhancedVolcano')
+if (!requireNamespace("EnhancedVolcano", quietly = TRUE)) {
+  BiocManager::install("EnhancedVolcano")
+}
 library(EnhancedVolcano)
 
 p<-EnhancedVolcano(res,
@@ -331,7 +335,7 @@ p<-EnhancedVolcano(res,
     arrowheads = FALSE,       # Evita que las líneas conectoras terminen con flechas
     ylim = c(0, 4.5)        # Ajusta el límite del eje y
 )
-png("VolcanoPlot - control y EA.png", width = 16, height = 10, units = "in", res = 300)
+png("Resultados/Patología/VolcanoPlot - control y EA.png", width = 16, height = 10, units = "in", res = 300)
 p
 # Cerrar el dispositivo gráfico
 dev.off()
@@ -357,7 +361,7 @@ ggplot(as.data.frame(res), aes(x = log2FoldChange, y = -log10(padj), color = cat
                   point.padding = 0.5,  # Espaciado alrededor del punto
                   segment.color = 'grey50',  # Color de la línea que conecta la etiqueta con el punto
                   max.overlaps = 20)  # Permitir un número infinito de superposiciones
-ggsave("Volcano plot - control y EA bis.png", width = 15, height = 10, units = "cm",bg = "white")
+ggsave("Resultados/Patología/Volcano plot - control y EA bis.png", width = 15, height = 10, units = "cm",bg = "white")
 
 ```
 
@@ -378,7 +382,7 @@ mirTarBase <- read_delim("hsa_MTI.csv", delim = ",")  # Ajusta el nombre del arc
 # Tu lista de miRNAs de interés
 miRNA_list <- rownames(resSig)
 miRNA_list <- gsub("_", "-", miRNA_list)
-write.csv(miRNA_list, file="EA_C_miRNAs_names.csv")
+write.csv(miRNA_list, file="Resultados/Patología/EA_C_miRNAs_names.csv")
 
 # Filtrar solo interacciones funcionales
 mirTarBase <- mirTarBase %>%
@@ -400,8 +404,14 @@ cat("Genes diana:", length(genes_target), "\n")
 ### Realizar enriquecimiento funcional con `clusterProfiler`
 
 ```{r}
-BiocManager::install(c("clusterProfiler", "org.Hs.eg.db", "enrichplot"))
+# Lista de paquetes necesarios
+paquetes <- c("clusterProfiler", "org.Hs.eg.db", "enrichplot")
 
+# Instalar solo los paquetes que no están instalados
+paquetes_no_instalados <- paquetes[!paquetes %in% installed.packages()[, "Package"]]
+if (length(paquetes_no_instalados) > 0) {
+  BiocManager::install(paquetes_no_instalados)
+}
 library(clusterProfiler)
 library(org.Hs.eg.db)  # Base de datos para humanos
 library(enrichplot)
@@ -420,12 +430,12 @@ enrichGO_result_BP <- enrichGO(
 head(enrichGO_result_BP)
 
 dotplot(enrichGO_result_BP, showCategory=10)  # Top 10 categorías
-ggsave("dotplot_BP.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Patología/dotplot_BP.png", width = 10, height = 10, dpi = 600)
 barplot(enrichGO_result_BP, showCategory=10)  # Barras con las principales categorías
 
-ggsave("barplot_BP.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Patología/barplot_BP.png", width = 10, height = 10, dpi = 600)
 emapplot(pairwise_termsim(enrichGO_result_BP))
-ggsave("emapplot_BP.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Patología/emapplot_BP.png", width = 10, height = 10, dpi = 600)
 
 # Enriquecimiento GO
 enrichGO_result_CC <- enrichGO(
@@ -441,12 +451,12 @@ enrichGO_result_CC <- enrichGO(
 head(enrichGO_result_CC)
 
 dotplot(enrichGO_result_CC, showCategory=10)  # Top 10 categorías
-ggsave("dotplot_CC.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Patología/dotplot_CC.png", width = 10, height = 10, dpi = 600)
 barplot(enrichGO_result_CC, showCategory=10)  # Barras con las principales categorías
 
-ggsave("barplot_CC.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Patología/barplot_CC.png", width = 10, height = 10, dpi = 600)
 emapplot(pairwise_termsim(enrichGO_result_CC))
-ggsave("emapplot_CC.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Patología/emapplot_CC.png", width = 10, height = 10, dpi = 600)
 
 # Enriquecimiento GO
 enrichGO_result_MF <- enrichGO(
@@ -462,12 +472,12 @@ enrichGO_result_MF <- enrichGO(
 head(enrichGO_result_MF)
 
 dotplot(enrichGO_result_MF, showCategory=10)  # Top 10 categorías
-ggsave("dotplot_MF.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Patología/dotplot_MF.png", width = 10, height = 10, dpi = 600)
 barplot(enrichGO_result_MF, showCategory=10)  # Barras con las principales categorías
 
-ggsave("barplot_MF.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Patología/barplot_MF.png", width = 10, height = 10, dpi = 600)
 emapplot(pairwise_termsim(enrichGO_result_MF))
-ggsave("emapplot_MF.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Patología/emapplot_MF.png", width = 10, height = 10, dpi = 600)
 ```
 
 ### Enriquecimiento KEGG (Vias metabolicas)
@@ -491,11 +501,11 @@ enrichKEGG_result <- enrichKEGG(
 
 # Visualizar KEGG
 dotplot(enrichKEGG_result, showCategory=10)  # Top 10 categorías
-ggsave("dotplot_K.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Patología/dotplot_K.png", width = 10, height = 10, dpi = 600)
 
 barplot(enrichKEGG_result, showCategory=10)  # Barras con las principales categorías
-ggsave("barplot_K.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Patología/barplot_K.png", width = 10, height = 10, dpi = 600)
 
 emapplot(pairwise_termsim(enrichKEGG_result))
-ggsave("emapplot_K.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Patología/emapplot_K.png", width = 10, height = 10, dpi = 600)
 ```

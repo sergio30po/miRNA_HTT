@@ -84,13 +84,16 @@ vsd_cor <- cor(vsd_mat)  # Correlación entre muestras
 col_data_df <- as.data.frame(colData(dds))
 
 # Gráfico de agrupamiento jerárquico
+png(file="Resultados/Condición/Cluster jerárquico Condicion.png", width = 16, height = 10, units = "in", res = 300)
 plot(hclust(dist(t(vsd_mat))), labels = col_data_df$Condition,
      main = "Clúster jerárquico de muestras por condición")
+dev.off()
+
 p<-pheatmap(vsd_cor, 
          annotation_col = col_data_df["Condition"],  # Anotación para las columnas
          main = "Heatmap de correlación por condición")
 # Heatmap de la matriz de correlación
-png("heatmap_correlacion_condicion.png", width = 16, height = 10, units = "in", res = 300)
+png(file="Resultados/Condición/heatmap_correlacion_condicion.png", width = 16, height = 10, units = "in", res = 300)
 p
 dev.off()
 
@@ -123,6 +126,8 @@ ggplot(pcaData, aes(x = PC1, y = PC2, color = Condition, shape = Condition)) +
     shape = "Condición",   # Título de la leyenda de formas
     fill = "Condición"     # Título de la leyenda de relleno
   )
+ggsave(filename="Resultados/Condición/PCA condicion.png", width = 15, height = 10, units = "cm",bg = "white")
+
 ```
 
 ### Análisis de expresión diferencial
@@ -151,12 +156,14 @@ ggplot(df, aes(x = mean_counts, y = variance_counts)) +
   ylab("Variance per gene") +  # Etiqueta del eje Y
   ggtitle("Gráfico de dispersión: Media vs Varianza") +  # Título del gráfico
   theme_minimal()+  theme(panel.background = element_rect(fill = "lightgray"))
+ggsave(filename="Resultados/Condición/PCA condicion - varianza.png", width = 15, height = 10, units = "cm",bg = "white")
 
 # Opcional: Gráfico usando la función plotDispEsts de DESeq2
+png(file="Resultados/Condición/Dispersión Condición.png", width = 16, height = 10, units = "in", res = 300)
 plotDispEsts(dds)  # Muestra la estimación de la dispersión
 ```
 
-#### Selección de criterios de filtrado de resultados
+#### Selección de criterios de filtrado de Resultados/Condición/
 
 -   En análisis transcriptómicos, un umbral de **log2FC \> 1** implica un cambio de 2 veces en la expresión, lo cual suele ser considerado biológicamente relevante.
 
@@ -174,7 +181,7 @@ res_A_C <- res_A_C[order(res_A_C$padj),]
 summary(res_A_C)
 head(res_A_C)
 
-write.csv(as.data.frame(res_A_C), file="totalmiRNA_B_C.csv")
+write.csv(as.data.frame(res_A_C), file="Resultados/Condición/totalmiRNA_A_C.csv")
 # Filtrar genes significativos
 resSig_A_C <- subset(res_A_C, padj < 0.05 & abs(log2FoldChange) > 1)
 summary(resSig_A_C)
@@ -185,7 +192,7 @@ head(resSig_A_C)
 # Número total de miRNAs significativos
 cat("Número de miRNAs diferencialmente expresados:", nrow(resSig_A_C), "\n")
 
-write.csv(resSig_A_C, file="A_C_miRNAs.csv")
+write.csv(resSig_A_C, file="Resultados/Condición/A_C_miRNAs.csv")
 
 # Categorias de los miRNAs
 resSig_A_C$category <- "Not Significant"  # Categoría por defecto
@@ -220,7 +227,7 @@ ggmaplot(res_A_C, main = "MA plot Condicion C vs A",
    font.label = c("bold", 8),
    font.legend = "bold",
    font.main = "bold")
-ggsave("MA plot Condicion C vs A.png", width = 15, height = 10, units = "cm",bg = "white")
+ggsave("Resultados/Condición/MA plot Condicion C vs A.png", width = 15, height = 10, units = "cm",bg = "white")
 
 
 # Add rectangle around labels
@@ -232,7 +239,7 @@ ggmaplot(res_A_C, main = "MA plot Condicion C vs A",
    font.label = c("bold", 8), label.rectangle = TRUE,
    font.legend = "bold",
    font.main = "bold")
-ggsave("MA plot Condicion C vs A_bis.png", width = 15, height = 10, units = "cm",bg = "white")
+ggsave("Resultados/Condición/MA plot Condicion C vs A_bis.png", width = 15, height = 10, units = "cm",bg = "white")
 
 ```
 
@@ -266,7 +273,9 @@ colnames(l2_val)<-"logFC"
 mean<-as.matrix(df$baseMean)
 colnames(mean)<-"AveExpr"
 
-BiocManager::install("ComplexHeatmap")
+if (!requireNamespace("ComplexHeatmap", quietly = TRUE)) {
+  BiocManager::install("ComplexHeatmap")
+}
 library(ComplexHeatmap)
 if (!require("RColorBrewer")) install.packages("RColorBrewer")
 if (!require("circlize")) install.packages("circlize")
@@ -294,13 +303,13 @@ h3 <- Heatmap(mean, row_labels = rownames(df),
               grid.text(round(mean[i, j],2), x, y)
             })
 # Guardar el heatmap en PNG con alta calidad
-png("heatmap_miRNAs_values_A_C.png", width = 16, height = 10, units = "in", res = 300)
+png("Resultados/Condición/heatmap_miRNAs_values_A_C.png", width = 16, height = 10, units = "in", res = 300)
 h<-h1+h2
 h
 # Cerrar el dispositivo gráfico
 dev.off()
 h
-png("heatmap_miRNAs_A_C.png", width = 16, height = 10, units = "in", res = 300)
+png("Resultados/Condición/heatmap_miRNAs_A_C.png", width = 16, height = 10, units = "in", res = 300)
 h
 # Cerrar el dispositivo gráfico
 dev.off()
@@ -329,7 +338,7 @@ p<-EnhancedVolcano(res_A_C,
     arrowheads = FALSE,       # Evita que las líneas conectoras terminen con flechas
     ylim = c(0, 4.5)        # Ajusta el límite del eje y
 )
-png("VolcanoPlot - A-C.png", width = 16, height = 10, units = "in", res = 300)
+png("Resultados/Condición/VolcanoPlot - A-C.png", width = 16, height = 10, units = "in", res = 300)
 p
 # Cerrar el dispositivo gráfico
 dev.off()
@@ -350,7 +359,7 @@ res_A_B <- res_A_B[order(res_A_B$padj),]
 summary(res_A_B)
 head(res_A_B)
 
-write.csv(as.data.frame(res_A_B), file="totalmiRNA_A_B.csv")
+write.csv(as.data.frame(res_A_B), file="Resultados/Condición/totalmiRNA_A_B.csv")
 # Filtrar genes significativos
 resSig_A_B <- subset(res_A_B, padj < 0.05 & abs(log2FoldChange) > 1)
 summary(resSig_A_B)
@@ -361,7 +370,7 @@ head(resSig_A_B)
 # Número total de miRNAs significativos
 cat("Número de miRNAs diferencialmente expresados:", nrow(resSig_A_B), "\n")
 
-write.csv(resSig_A_B, file="A_C_miRNAs.csv")
+write.csv(resSig_A_B, file="Resultados/Condición/A_C_miRNAs.csv")
 
 # Categorias de los miRNAs
 res_A_B$category <- "Not Significant"  # Categoría por defecto
@@ -395,7 +404,7 @@ res_B_C <- res_B_C[order(res_B_C$padj),]
 summary(res_B_C)
 head(res_B_C)
 
-write.csv(as.data.frame(res_B_C), file="totalmiRNA_B_C.csv")
+write.csv(as.data.frame(res_B_C), file="Resultados/Condición/totalmiRNA_B_C.csv")
 # Filtrar genes significativos
 resSig_B_C <- subset(res_B_C, padj < 0.05 & abs(log2FoldChange) > 1)
 summary(resSig_B_C)
@@ -406,7 +415,7 @@ head(resSig_B_C)
 # Número total de miRNAs significativos
 cat("Número de miRNAs diferencialmente expresados:", nrow(resSig_B_C), "\n")
 
-write.csv(resSig_B_C, file="B_C_miRNAs.csv")
+write.csv(resSig_B_C, file="Resultados/Condición/B_C_miRNAs.csv")
 
 # Categorias de los miRNAs
 res_B_C$category <- "Not Significant"  # Categoría por defecto
@@ -441,7 +450,7 @@ ggmaplot(res_B_C, main = "MA plot Condicion C vs B",
    font.label = c("bold", 8),
    font.legend = "bold",
    font.main = "bold")
-ggsave("MA plot Condicion C vs B.png", width = 15, height = 10, units = "cm",bg = "white")
+ggsave("Resultados/Condición/MA plot Condicion C vs B.png", width = 15, height = 10, units = "cm",bg = "white")
 
 
 # Add rectangle around labels
@@ -453,7 +462,7 @@ ggmaplot(res_B_C, main = "MA plot Condicion C vs B",
    font.label = c("bold", 8), label.rectangle = TRUE,
    font.legend = "bold",
    font.main = "bold")
-ggsave("MA plot Condicion C vs B_bis.png", width = 15, height = 10, units = "cm",bg = "white")
+ggsave("Resultados/Condición/MA plot Condicion C vs B_bis.png", width = 15, height = 10, units = "cm",bg = "white")
 ```
 
 #### Heatmap
@@ -479,13 +488,6 @@ colnames(l2_val)<-"logFC"
 mean<-as.matrix(df$baseMean)
 colnames(mean)<-"AveExpr"
 
-BiocManager::install("ComplexHeatmap")
-library(ComplexHeatmap)
-if (!require("RColorBrewer")) install.packages("RColorBrewer")
-if (!require("circlize")) install.packages("circlize")
-library(RColorBrewer)
-library(circlize)
-
 col_log2FC<-colorRamp2(c(min(l2_val),0,max(l2_val)),c("blue","white","red"))
 
 col_AveExpr<-colorRamp2(c(quantile(mean)[1],quantile(mean)[4]),c("white","red"))
@@ -507,13 +509,13 @@ h3 <- Heatmap(mean, row_labels = rownames(df),
               grid.text(round(mean[i, j],2), x, y)
             })
 # Guardar el heatmap en PNG con alta calidad
-png("heatmap_miRNAs_values_B_C.png", width = 16, height = 10, units = "in", res = 300)
+png("Resultados/Condición/heatmap_miRNAs_values_B_C.png", width = 16, height = 10, units = "in", res = 300)
 h<-h1+h2
 h
 # Cerrar el dispositivo gráfico
 dev.off()
 h
-png("heatmap_miRNAs_B_C.png", width = 16, height = 10, units = "in", res = 300)
+png("Resultados/Condición/heatmap_miRNAs_B_C.png", width = 16, height = 10, units = "in", res = 300)
 h
 # Cerrar el dispositivo gráfico
 dev.off()
@@ -537,7 +539,7 @@ p<-EnhancedVolcano(res_B_C,
     arrowheads = FALSE,       # Evita que las líneas conectoras terminen con flechas
     ylim = c(0, 4.5)        # Ajusta el límite del eje y
 )
-png("VolcanoPlot - B-C.png", width = 16, height = 10, units = "in", res = 300)
+png("Resultados/Condición/VolcanoPlot - B-C.png", width = 16, height = 10, units = "in", res = 300)
 p
 # Cerrar el dispositivo gráfico
 dev.off()
@@ -563,7 +565,7 @@ mirTarBase <- read_delim("hsa_MTI.csv", delim = ",")  # Ajusta el nombre del arc
 # Tu lista de miRNAs de interés
 miRNA_list <- rownames(resSig_A_C)
 miRNA_list <- gsub("_", "-", miRNA_list)
-write.csv(miRNA_list, file="A_C_miRNAs_names.csv")
+write.csv(miRNA_list, file="Resultados/Condición/A_C_miRNAs_names.csv")
 
 # Filtrar solo interacciones funcionales
 mirTarBase <- mirTarBase %>%
@@ -608,15 +610,15 @@ enrichGO_result_BP <- enrichGO(
   qvalueCutoff = 0.05
 )
 
-# Mostrar resultados
+# Mostrar Resultados/Condición/
 head(enrichGO_result_BP)
 
 dotplot(enrichGO_result_BP, showCategory=10)  # Top 10 categorías
-ggsave("dotplot_BP_A_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/dotplot_BP_A_C.png", width = 10, height = 10, dpi = 600)
 barplot(enrichGO_result_BP, showCategory=10)  # Barras con las principales categorías
-ggsave("barplot_BP_A_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/barplot_BP_A_C.png", width = 10, height = 10, dpi = 600)
 emapplot(pairwise_termsim(enrichGO_result_BP))
-ggsave("emapplot_BP_A_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/emapplot_BP_A_C.png", width = 10, height = 10, dpi = 600)
 
 # Enriquecimiento GO
 enrichGO_result_CC <- enrichGO(
@@ -628,16 +630,16 @@ enrichGO_result_CC <- enrichGO(
   qvalueCutoff = 0.05
 )
 
-# Mostrar resultados
+# Mostrar Resultados/Condición/
 head(enrichGO_result_CC)
 
 dotplot(enrichGO_result_CC, showCategory=10)  # Top 10 categorías
-ggsave("dotplot_CC_A_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/dotplot_CC_A_C.png", width = 10, height = 10, dpi = 600)
 
 barplot(enrichGO_result_CC, showCategory=10)  # Barras con las principales categorías
-ggsave("barplot_CC_A_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/barplot_CC_A_C.png", width = 10, height = 10, dpi = 600)
 emapplot(pairwise_termsim(enrichGO_result_CC))
-ggsave("emapplot_CC_A_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/emapplot_CC_A_C.png", width = 10, height = 10, dpi = 600)
 
 # Enriquecimiento GO
 enrichGO_result_MF <- enrichGO(
@@ -649,15 +651,15 @@ enrichGO_result_MF <- enrichGO(
   qvalueCutoff = 0.05
 )
 
-# Mostrar resultados
+# Mostrar Resultados/Condición/
 head(enrichGO_result_MF)
 
 dotplot(enrichGO_result_MF, showCategory=10)  # Top 10 categorías
-ggsave("dotplot_MF_A_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/dotplot_MF_A_C.png", width = 10, height = 10, dpi = 600)
 barplot(enrichGO_result_MF, showCategory=10)  # Barras con las principales categorías
-ggsave("barplot_MF_A_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/barplot_MF_A_C.png", width = 10, height = 10, dpi = 600)
 emapplot(pairwise_termsim(enrichGO_result_MF))
-ggsave("emapplot_MF_A_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/emapplot_MF_A_C.png", width = 10, height = 10, dpi = 600)
 ```
 
 ### Enriquecimiento KEGG (Vias metabolicas)
@@ -681,13 +683,13 @@ enrichKEGG_result <- enrichKEGG(
 
 # Visualizar KEGG
 dotplot(enrichKEGG_result, showCategory=10)  # Top 10 categorías
-ggsave("dotplot_K_A_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/dotplot_K_A_C.png", width = 10, height = 10, dpi = 600)
 
 barplot(enrichKEGG_result, showCategory=10)  # Barras con las principales categorías
-ggsave("barplot_K_A_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/barplot_K_A_C.png", width = 10, height = 10, dpi = 600)
 
 emapplot(pairwise_termsim(enrichKEGG_result))
-ggsave("emapplot_K_A_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/emapplot_K_A_C.png", width = 10, height = 10, dpi = 600)
 
 ```
 
@@ -699,7 +701,7 @@ ggsave("emapplot_K_A_C.png", width = 10, height = 10, dpi = 600)
 # Tu lista de miRNAs de interés
 miRNA_list <- rownames(resSig_B_C)
 miRNA_list <- gsub("_", "-", miRNA_list)
-write.csv(miRNA_list, file="B_C_miRNAs_names.csv")
+write.csv(miRNA_list, file="Resultados/Condición/B_C_miRNAs_names.csv")
 
 # Filtrar solo interacciones funcionales
 mirTarBase <- mirTarBase %>%
@@ -731,15 +733,15 @@ enrichGO_result_BP <- enrichGO(
   qvalueCutoff = 0.05
 )
 
-# Mostrar resultados
+# Mostrar Resultados/Condición/
 head(enrichGO_result_BP)
 
 dotplot(enrichGO_result_BP, showCategory=10)  # Top 10 categorías
-ggsave("dotplot_BP_B_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/dotplot_BP_B_C.png", width = 10, height = 10, dpi = 600)
 barplot(enrichGO_result_BP, showCategory=10)  # Barras con las principales categorías
-ggsave("barplot_BP_B_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/barplot_BP_B_C.png", width = 10, height = 10, dpi = 600)
 emapplot(pairwise_termsim(enrichGO_result_BP))
-ggsave("emapplot_BP_B_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/emapplot_BP_B_C.png", width = 10, height = 10, dpi = 600)
 
 # Enriquecimiento GO
 enrichGO_result_CC <- enrichGO(
@@ -751,16 +753,16 @@ enrichGO_result_CC <- enrichGO(
   qvalueCutoff = 0.05
 )
 
-# Mostrar resultados
+# Mostrar Resultados/Condición/
 head(enrichGO_result_CC)
 
 dotplot(enrichGO_result_CC, showCategory=10)  # Top 10 categorías
-ggsave("dotplot_CC_B_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/dotplot_CC_B_C.png", width = 10, height = 10, dpi = 600)
 
 barplot(enrichGO_result_CC, showCategory=10)  # Barras con las principales categorías
-ggsave("barplot_CC_B_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/barplot_CC_B_C.png", width = 10, height = 10, dpi = 600)
 emapplot(pairwise_termsim(enrichGO_result_CC))
-ggsave("emapplot_CC_B_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/emapplot_CC_B_C.png", width = 10, height = 10, dpi = 600)
 
 # Enriquecimiento GO
 enrichGO_result_MF <- enrichGO(
@@ -772,15 +774,15 @@ enrichGO_result_MF <- enrichGO(
   qvalueCutoff = 0.05
 )
 
-# Mostrar resultados
+# Mostrar Resultados/Condición/
 head(enrichGO_result_MF)
 
 dotplot(enrichGO_result_MF, showCategory=10)  # Top 10 categorías
-ggsave("dotplot_MF_B_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/dotplot_MF_B_C.png", width = 10, height = 10, dpi = 600)
 barplot(enrichGO_result_MF, showCategory=10)  # Barras con las principales categorías
-ggsave("barplot_MF_B_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/barplot_MF_B_C.png", width = 10, height = 10, dpi = 600)
 emapplot(pairwise_termsim(enrichGO_result_MF))
-ggsave("emapplot_MF_B_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/emapplot_MF_B_C.png", width = 10, height = 10, dpi = 600)
 ```
 
 ### Enriquecimiento KEGG (Vias metabolicas)
@@ -804,11 +806,11 @@ enrichKEGG_result <- enrichKEGG(
 
 # Visualizar KEGG
 dotplot(enrichKEGG_result, showCategory=10)  # Top 10 categorías
-ggsave("dotplot_K_B_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/dotplot_K_B_C.png", width = 10, height = 10, dpi = 600)
 
 barplot(enrichKEGG_result, showCategory=10)  # Barras con las principales categorías
-ggsave("barplot_K_B_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/barplot_K_B_C.png", width = 10, height = 10, dpi = 600)
 
 emapplot(pairwise_termsim(enrichKEGG_result))
-ggsave("emapplot_K_B_C.png", width = 10, height = 10, dpi = 600)
+ggsave("Resultados/Condición/emapplot_K_B_C.png", width = 10, height = 10, dpi = 600)
 ```

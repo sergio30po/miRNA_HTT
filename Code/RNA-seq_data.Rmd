@@ -62,8 +62,6 @@ print(tabla_reads)
 
 if (!require("tibble")) install.packages("tibble")
 library(openxlsx)
-# Guardar la tabla en un archivo
-write.xlsx(as.data.frame(tabla_reads),file="tabla_total_reads.xlsx",rowNames = TRUE)
 ```
 
 #### Samples datasheet
@@ -88,4 +86,19 @@ all(rownames(samples) == colnames(conteos))
 #Reordenar si no lo están
 conteos <- conteos[, rownames(samples)]
 all(rownames(samples) == colnames(conteos))
+```
+
+Crear directorio de figuras y establecer ese directorio como final
+
+```{r}
+# Crear el directorio si no existe
+if (!dir.exists("Resultados")) {
+  dir.create("Resultados")
+}
+# Establecer el directorio donde están los archivos
+cat("Choose directorio figuras:\n")
+setwd("Resultados")
+
+# Guardar la tabla en un archivo
+write.xlsx(as.data.frame(tabla_reads),file="Resuldaos/tabla_total_reads.xlsx",rowNames = TRUE)
 ```
