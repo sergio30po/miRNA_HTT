@@ -19,29 +19,28 @@ El método que utiliza DESeq2 es Median of Ratios (mediana de razones). Funciona
 
 Para cada muestra, se calcula un factor de tamaño relativo basado en la mediana de las razones de expresión en comparación con la muestra "típica".
 
--Se eliminan genes con cuentas muy bajas (para evitar sesgos en la normalización).
+- Se eliminan genes con cuentas muy bajas (para evitar sesgos en la normalización).
 
--Se calcula la razón de cada gen respecto a la media geométrica de ese gen en todas las muestras.
+- Se calcula la razón de cada gen respecto a la media geométrica de ese gen en todas las muestras.
 
--Se toma la mediana de todas las razones en cada muestra → Este será el factor de tamaño.
+- Se toma la mediana de todas las razones en cada muestra → Este será el factor de tamaño.
 
 **Paso 2: Aplicar los factores de tamaño a los datos**
 
-Cada conteo crudo (counts(dds)) se divide por el factor de tamaño de su muestra:
-
+Cada conteo crudo (counts(dds)) se divide por el factor de tamaño de su muestra. 
 Esto genera los normalized counts, que se pueden usar para análisis exploratorio.
 
 **Paso 3: Efecto de la normalización**
 
 Antes de normalizar:
--Las muestras con mayor profundidad de secuenciación pueden tener valores artificialmente más altos.
+- Las muestras con mayor profundidad de secuenciación pueden tener valores artificialmente más altos.
 
--Los genes altamente expresados pueden sesgar la distribución.
+- Los genes altamente expresados pueden sesgar la distribución.
 
 Después de la normalización:
--Las muestras quedan ajustadas para comparaciones justas.
+- Las muestras quedan ajustadas para comparaciones justas.
 
--Se eliminan los efectos de la profundidad de secuenciación.
+- Se eliminan los efectos de la profundidad de secuenciación.
 
 -Los valores reflejan mejor las diferencias biológicas reales en lugar de sesgos técnicos.
 
